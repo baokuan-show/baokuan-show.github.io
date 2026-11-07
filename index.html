@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="description" content="爆款提詞器把人設收成可交給 AI 的腳本提示詞。可切換保險業務或其他行業。僅供內部使用，不對外公開。">
+<meta property="og:title" content="爆款提詞器">
+<meta property="og:description" content="把人設收成可交給 AI 的腳本提示詞。可切換保險業務或其他行業。僅供內部使用，不對外公開。">
+<meta name="theme-color" content="#0C4F45">
+<title>爆款提詞器</title>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <div class="seal" aria-hidden="true">提</div>
+    <div>
+      <h1>爆款提詞器</h1>
+      <p>先把人設定清楚，再交給 AI</p>
+    </div>
+  </div>
+  <nav class="nav-desktop" id="navDesktop" aria-label="主要">
+    <button type="button" data-view="persona">人設</button>
+    <button type="button" data-view="ideas">靈感</button>
+    <button type="button" data-view="prompts">提示詞</button>
+    <button type="button" data-view="advice">建議</button>
+    <button type="button" data-view="backup">備份</button>
+  </nav>
+</header>
+
+<main class="wrap" id="main">
+  <section class="view" id="view-persona" data-view-panel="persona">
+    <h2>人設定位</h2>
+    <p class="lede">一份人設對一種說話方式。先選產業，後面的主題和合規界線會跟著換。</p>
+    <div class="panel">
+      <h3>目前這份人設</h3>
+      <div class="chips" id="switcher"></div>
+    </div>
+    <div class="jumps" id="stepJumps" aria-label="步驟"></div>
+
+    <div class="step" data-step="1">
+      <div class="panel">
+        <h3>這份人設給誰用</h3>
+        <div class="choice" role="radiogroup" aria-label="產業">
+          <button type="button" id="indInsurance" aria-pressed="false">
+            <strong>保險業務</strong>
+            <span>保險主題與該領域的合規界線</span>
+          </button>
+          <button type="button" id="indGeneral" aria-pressed="false">
+            <strong>其他行業</strong>
+            <span>一般創作者主題，不套保險用語</span>
+          </button>
+        </div>
+        <div id="tradeWrap" hidden>
+          <label for="pTrade">我的產業</label>
+          <input id="pTrade" type="text" autocomplete="off" placeholder="例如：社區早午餐、成人畫室">
+        </div>
+        <div id="exampleWrap" hidden>
+          <p class="field-note">範例只填這份人設，不會寫入公司名稱或電話。</p>
+          <button type="button" class="btn ghost" id="btnShowExample">套用 Show 範例</button>
+        </div>
+        <label for="pName">暱稱</label>
+        <input id="pName" type="text" autocomplete="off" placeholder="對外怎麼稱呼你">
+        <label for="pTitle">職稱（選填）</label>
+        <input id="pTitle" type="text" autocomplete="off" placeholder="例如：團隊長">
+        <label for="pPositioning">一句話定位</label>
+        <input id="pPositioning" type="text" autocomplete="off" placeholder="你幫誰把什麼事看懂">
+        <label for="pAudience">想對話的人（選填）</label>
+        <input id="pAudience" type="text" autocomplete="off" placeholder="例如：剛開始顧家庭的人">
+      </div>
+    </div>
+
+    <div class="step" data-step="2" hidden>
+      <div class="panel">
+        <h3>說話方式</h3>
+        <p class="lede">選起來像你的就好，不必每項都選。</p>
+        <div class="chips" id="traitChips"></div>
+        <label for="pMbti">MBTI（可手選，或用下面 12 題）</label>
+        <select id="pMbti"><option value="">尚未選擇</option></select>
+        <div id="quiz" style="margin-top:12px">
+          <p id="quizMeta" class="field-note"></p>
+          <p id="quizText" style="font-weight:700"></p>
+          <div id="quizOpts"></div>
+          <div class="actions">
+            <button type="button" class="btn ghost" id="quizPrev">上一題</button>
+            <button type="button" class="btn ghost" id="quizRetake" hidden>重新測驗</button>
+          </div>
+          <div id="quizResult" class="panel" hidden></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step" data-step="3" hidden>
+      <div class="panel">
+        <h3>你在意的事</h3>
+        <p class="lede">留兩到四個就夠，太多會讓腳本失焦。</p>
+        <div class="chips" id="valueChips"></div>
+      </div>
+    </div>
+
+    <div class="step" data-step="4" hidden>
+      <div class="panel">
+        <h3>常講的主題</h3>
+        <p class="lede" id="nicheLede">選產業之後，這裡會換成對應的主題。</p>
+        <p id="nicheEmpty" class="field-note">請先回到第 1 步選擇產業。</p>
+        <div class="chips" id="nicheChips"></div>
+        <label for="sceneInput">常出現的生活畫面（選填）</label>
+        <div class="row">
+          <input id="sceneInput" type="text" autocomplete="off" placeholder="一個具體畫面，按加入">
+          <button type="button" class="btn ghost" id="btnAddScene">加入</button>
+        </div>
+        <div class="chips" id="sceneList" style="margin-top:8px"></div>
+      </div>
+    </div>
+
+    <div class="step" data-step="5" hidden>
+      <div class="panel">
+        <h3>強項，以及還在練的</h3>
+        <p class="lede">還在練的部分會變成可拍的切角，不是自我批評。</p>
+        <h3 style="font-size:16px">強項</h3>
+        <div class="chips" id="proChips"></div>
+        <h3 style="font-size:16px;margin-top:16px">還在練</h3>
+        <div class="chips" id="conChips"></div>
+        <div id="conNotes"></div>
+      </div>
+    </div>
+
+    <div class="step" data-step="6" hidden>
+      <div class="panel">
+        <h3>影片形式</h3>
+        <div class="chips" id="videoChips"></div>
+      </div>
+    </div>
+
+    <div class="step" data-step="7" hidden>
+      <div class="panel">
+        <h3>稿紙氣質</h3>
+        <p class="lede">只影響人設卡的顏色，不影響提示詞內容。</p>
+        <div class="chips" id="themeChips"></div>
+      </div>
+    </div>
+
+    <div class="step" data-step="8" hidden>
+      <div class="panel">
+        <h3>確認人設</h3>
+        <p class="lede">下面這張卡，就是提示詞裡會帶進去的人。欄位有改就會儲存。</p>
+        <div id="card"></div>
+        <h3 style="margin-top:16px;font-size:16px">純文字</h3>
+        <div class="plain" id="cardText"></div>
+        <div class="actions">
+          <button type="button" class="btn" id="btnToPrompts">前往提示詞</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="wizard-nav">
+      <button type="button" class="btn ghost" id="wizardPrev">上一步</button>
+      <button type="button" class="btn" id="wizardNext">下一步</button>
+    </div>
+    <p id="wizardLabel" class="field-note" style="text-align:center">第 1 步，共 8 步</p>
+  </section>
+
+  <section class="view" id="view-ideas" data-view-panel="ideas" hidden>
+    <h2>靈感簿</h2>
+    <p class="lede">拜訪、留言、自己突然想到的一句話，先放著。產生提示詞時會依主題挑進去。</p>
+    <div class="panel">
+      <label for="ideaContent">內容</label>
+      <textarea id="ideaContent" placeholder="貼上一句你想留下來的話"></textarea>
+      <label for="ideaSource">來源</label>
+      <select id="ideaSource">
+        <option>拜訪</option>
+        <option>留言</option>
+        <option>短片</option>
+        <option>其他</option>
+      </select>
+      <label for="ideaLink">連結（選填，僅 http / https）</label>
+      <input id="ideaLink" type="url" inputmode="url" placeholder="https://">
+      <label for="ideaCategory">只用在哪個主題（選填）</label>
+      <select id="ideaCategory"></select>
+      <div class="actions">
+        <button type="button" class="btn" id="btnAddIdea">加入靈感簿</button>
+      </div>
+    </div>
+    <div id="ideasList"></div>
+  </section>
+
+  <section class="view" id="view-prompts" data-view-panel="prompts" hidden>
+    <h2>提示詞產生器</h2>
+    <p class="lede">這裡不直接寫腳本，只把人設、主題和界線收成一段可以貼走的提示詞。</p>
+    <div class="panel">
+      <label for="promptNiche">這次用哪一個主題</label>
+      <select id="promptNiche"></select>
+      <p id="promptNicheNote" class="field-note"></p>
+    </div>
+    <div class="panel">
+      <h3>① 還沒有題目，先找角度</h3>
+      <label for="promptCountA">要幾篇（1–10）</label>
+      <input id="promptCountA" type="text" inputmode="numeric" value="5">
+      <button type="button" class="btn" id="btnPromptA">產生並複製</button>
+    </div>
+    <div class="panel">
+      <h3>② 已經有題目</h3>
+      <label for="promptTopicText">這次想講什麼</label>
+      <input id="promptTopicText" type="text" placeholder="一個具體題目">
+      <button type="button" class="btn" id="btnPromptB">產生並複製</button>
+    </div>
+    <div class="panel">
+      <h3>③ 同一個對話裡繼續</h3>
+      <p class="hint">沿用你已經貼給 AI 的人設，只再要新的角度。換了新對話請改用①或②。</p>
+      <label for="promptCountC">要幾篇（1–10）</label>
+      <input id="promptCountC" type="text" inputmode="numeric" value="5">
+      <button type="button" class="btn" id="btnPromptC">產生並複製</button>
+    </div>
+    <div class="panel">
+      <h3>④ 優化已有的稿</h3>
+      <p class="hint">複製這段之後，把你的稿貼在最後面，一起交給 AI。</p>
+      <button type="button" class="btn" id="btnPromptD">產生並複製</button>
+    </div>
+    <div class="panel">
+      <h3>這次的提示詞</h3>
+      <p class="hint" id="promptHint">也可以直接貼給你的 AI 助理</p>
+      <pre class="output" id="promptOutput">選好上面的方式後，提示詞會出現在這裡。</pre>
+      <p class="alert" id="promptError" role="alert"></p>
+      <button type="button" class="btn" id="btnCopyPrompt">複製提示詞</button>
+    </div>
+  </section>
+
+  <section class="view" id="view-advice" data-view-panel="advice" hidden>
+    <h2>經營建議</h2>
+    <p class="lede" id="adviceLede">依這份人設的產業與主題，給溝通上的提醒。不預測流量。</p>
+    <div id="adviceBody"></div>
+  </section>
+
+  <section class="view" id="view-backup" data-view-panel="backup" hidden>
+    <h2>備份</h2>
+    <p class="lede">資料存在這台裝置的瀏覽器。換手機前先下載一份。</p>
+    <div class="panel">
+      <h3>匯出</h3>
+      <button type="button" class="btn" id="btnExport">下載備份檔</button>
+    </div>
+    <div class="panel">
+      <h3>匯入</h3>
+      <label for="importFile">選擇 JSON 備份</label>
+      <input id="importFile" type="file" accept="application/json,.json">
+      <div class="actions">
+        <button type="button" class="btn" id="btnImport">匯入並覆蓋</button>
+      </div>
+      <p class="alert" id="importMessage" role="alert"></p>
+    </div>
+    <div class="panel" id="recoveryNote" hidden>
+      <h3>讀不起來的原文</h3>
+      <p class="hint">之前有一份無法解析的資料還留著。</p>
+      <div class="actions">
+        <button type="button" class="btn ghost" id="btnRecoveryDownload">下載原文</button>
+        <button type="button" class="btn ghost" id="btnRecoveryClear">我已保存，清除</button>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>清空</h3>
+      <button type="button" class="btn danger" id="btnResetAll">清空這台裝置上的稿紙</button>
+    </div>
+  </section>
+</main>
+
+<nav class="nav-mobile" id="navMobile" aria-label="主要">
+  <button type="button" data-view="persona">人設</button>
+  <button type="button" data-view="ideas">靈感</button>
+  <button type="button" data-view="prompts">提示詞</button>
+  <button type="button" data-view="advice">建議</button>
+  <button type="button" data-view="backup">備份</button>
+</nav>
+
+<div id="toast" class="toast" hidden role="status"></div>
+
+<div id="confirm" class="modal" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+    <h2 id="confirmTitle"></h2>
+    <p id="confirmBody"></p>
+    <div class="actions">
+      <button type="button" class="btn danger" id="confirmOk">確定</button>
+      <button type="button" class="btn ghost" id="confirmCancel">取消</button>
+    </div>
+  </div>
+</div>
+
+<div id="corrupt" class="gate" hidden>
+  <div class="gate-card" role="alertdialog" aria-modal="true" aria-labelledby="corruptTitle">
+    <h2 id="corruptTitle">這份瀏覽器裡的資料讀不起來</h2>
+    <p>原文已留在復原區，還沒有覆寫。你可以下載原文，或改從空白稿紙開始。</p>
+    <div class="actions">
+      <button type="button" class="btn ghost" id="btnCorruptDownload">下載原文</button>
+      <button type="button" class="btn" id="btnCorruptReset">從空白開始</button>
+    </div>
+  </div>
+</div>
+
+<noscript><p style="padding:16px">請開啟 JavaScript 才能使用爆款提詞器。</p></noscript>
+<script src="assets/app.js" defer></script>
+</body>
+</html>
